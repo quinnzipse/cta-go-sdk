@@ -4,7 +4,7 @@ import "time"
 
 type Station struct {
 	Name string
-	Id   string
+	Id   uint16
 }
 
 type LatLon struct {
@@ -13,7 +13,7 @@ type LatLon struct {
 }
 
 type Train struct {
-	RunNumber   int16
+	RunNumber   uint16
 	Line        string
 	Destination Station
 	Direction   string
