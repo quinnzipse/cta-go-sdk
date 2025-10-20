@@ -1,9 +1,9 @@
-package cta_test
+package traintracker_test
 
 import (
 	"testing"
 
-	"git.quinnzipse.dev/cta-tracker/internal/cta"
+	"git.quinnzipse.dev/cta-go-sdk/internal/traintracker"
 )
 
 type want struct {
@@ -18,13 +18,13 @@ func TestGetTrainArrivalsByStation(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		input cta.GetTrainArrivalsByStationProps
+		input traintracker.GetTrainArrivalsByStationProps
 		want  want
 	}{
 		{
 			name: "valid station - division",
-			input: cta.GetTrainArrivalsByStationProps{
-				Station: cta.Station{
+			input: traintracker.GetTrainArrivalsByStationProps{
+				Station: traintracker.Station{
 					Name: "division",
 					Id:   "test",
 				},
@@ -37,8 +37,8 @@ func TestGetTrainArrivalsByStation(t *testing.T) {
 		},
 		{
 			name: "valid station/direction - division -> ohare",
-			input: cta.GetTrainArrivalsByStationProps{
-				Station: cta.Station{
+			input: traintracker.GetTrainArrivalsByStationProps{
+				Station: traintracker.Station{
 					Name: "division",
 					Id:   "test",
 				},
@@ -53,8 +53,8 @@ func TestGetTrainArrivalsByStation(t *testing.T) {
 		},
 		{
 			name: "valid station/direction - division -> forest park",
-			input: cta.GetTrainArrivalsByStationProps{
-				Station: cta.Station{
+			input: traintracker.GetTrainArrivalsByStationProps{
+				Station: traintracker.Station{
 					Name: "division",
 					Id:   "test",
 				},
@@ -69,8 +69,8 @@ func TestGetTrainArrivalsByStation(t *testing.T) {
 		},
 		{
 			name: "invalid station ID",
-			input: cta.GetTrainArrivalsByStationProps{
-				Station: cta.Station{
+			input: traintracker.GetTrainArrivalsByStationProps{
+				Station: traintracker.Station{
 					Name: "division",
 					Id:   "bogus",
 				},
@@ -82,8 +82,8 @@ func TestGetTrainArrivalsByStation(t *testing.T) {
 		},
 		{
 			name: "empty station input",
-			input: cta.GetTrainArrivalsByStationProps{
-				Station: cta.Station{},
+			input: traintracker.GetTrainArrivalsByStationProps{
+				Station: traintracker.Station{},
 			},
 			want: want{
 				hasErr:    true,
@@ -96,7 +96,7 @@ func TestGetTrainArrivalsByStation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			res, err := cta.GetTrainArrivalsByStation(tt.input)
+			res, err := traintracker.GetTrainArrivalsByStation(tt.input)
 
 			if tt.want.hasErr {
 				if err == nil {

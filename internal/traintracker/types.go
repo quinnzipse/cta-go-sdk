@@ -1,6 +1,10 @@
-package cta
+package traintracker
 
 import "time"
+
+const (
+	CtaBaseUrl = "https://lapi.transitchicago.com"
+)
 
 type Station struct {
 	Name string
