@@ -2,12 +2,13 @@
 package traintracker
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	nurl "net/url"
 	"strconv"
+	"time"
 )
 
 type ArrivalsProps struct {
@@ -25,32 +26,161 @@ const path = "/api/1.0/ttarrivals.aspx"
 // 40000-49999 = Train stations (parent stops)
 // routes must be Red | Blue | Brn | G | Org | P | Pink | Y
 
-func (tt TrainTracker) Arrivals(props ArrivalsProps) error {
+func (tt TrainTracker) RawArrivals(props ArrivalsProps) (*ArrivalApiResponse, error) {
 
 	if err := sanityCheck(props); err != nil {
-		return err
+		return nil, err
 	}
 
 	url, err := generateArrivalsUrl(props, tt.key)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := http.Get(url.String())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	arrivalApiResp, err := parseRawArrivalApiResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return arrivalApiResp, nil
+}
+
+func (tt TrainTracker) Arrivals(props ArrivalsProps) (*ArrivalResponse, error) {
+	res, err := tt.RawArrivals(props)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.toArrivalResponse()
+}
+
+func decodeAPIResponse[T any, E any](resp *http.Response) (*T, *E, error) {
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	fmt.Println(string(body))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		var apiErr E
+		if err := json.Unmarshal(body, &apiErr); err != nil {
+			return nil, nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+		}
+		return nil, &apiErr, nil
+	}
 
-	return nil
+	var result T
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, nil, fmt.Errorf("failed to decode response body: %w", err)
+	}
+
+	return &result, nil, nil
+}
+
+func parseRawArrivalApiResponse(resp *http.Response) (*ArrivalApiResponse, error) {
+	if resp == nil {
+		return nil, fmt.Errorf("No response was included")
+	}
+
+	type ApiErr struct {
+		Err string `json:"err"`
+	}
+
+	apiRes, apiErr, err := decodeAPIResponse[ArrivalApiResponse, ApiErr](resp)
+	if err != nil {
+		return nil, err
+	}
+
+	if apiErr != nil {
+		return nil, fmt.Errorf("Error while decoding %v", apiErr)
+	}
+
+	return apiRes, nil
+}
+
+func (r ArrivalApiResponse) toArrivalResponse() (*ArrivalResponse, error) {
+	timeLoc, err := time.LoadLocation("America/Chicago")
+	if err != nil {
+		return nil, err
+	}
+
+	tmst, err := time.ParseInLocation("2006-01-02T15:04:05", r.Ctatt.Tmst, timeLoc)
+	if err != nil {
+		return nil, err
+	}
+
+	output := ArrivalResponse{
+		Ctatt: Ctatt{
+			Tmst:  tmst,
+			ErrCd: r.Ctatt.ErrCd,
+			ErrNm: r.Ctatt.ErrNm,
+			Eta:   []Eta{},
+		},
+	}
+
+	for i, eta := range r.Ctatt.Eta {
+
+		lat, err := strconv.ParseFloat(eta.Lat, 64)
+		if err != nil {
+			return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+		}
+
+		lon, err := strconv.ParseFloat(eta.Lon, 64)
+		if err != nil {
+			return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+		}
+
+		heading, err := strconv.ParseInt(eta.Heading, 10, 16)
+		if err != nil {
+			return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+		}
+
+		trDr, err := strconv.ParseInt(eta.TrDr, 10, 16)
+		if err != nil {
+			return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+		}
+
+		prdt, err := time.ParseInLocation("2006-01-02T15:04:05", eta.Prdt, timeLoc)
+		if err != nil {
+			return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+		}
+
+		arrT, err := time.ParseInLocation("2006-01-02T15:04:05", eta.ArrT, timeLoc)
+		if err != nil {
+			return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+		}
+
+		output.Ctatt.Eta = append(output.Ctatt.Eta, Eta{
+			StaId:   eta.StaId,
+			StpId:   eta.StpId,
+			StaNm:   eta.StaNm,
+			StpDe:   eta.StpDe,
+			Rn:      eta.Rn,
+			Rt:      eta.Rt,
+			DestSt:  eta.DestSt,
+			DestNm:  eta.DestNm,
+			TrDr:    int16(trDr),
+			Prdt:    prdt,
+			ArrT:    arrT,
+			IsApp:   eta.IsApp == "1",
+			IsSch:   eta.IsSch == "1",
+			IsDly:   eta.IsDly == "1",
+			IsFlt:   eta.IsFlt == "1",
+			Flags:   eta.Flags,
+			Lat:     lat,
+			Lon:     lon,
+			Heading: int16(heading),
+		})
+
+	}
+
+	return &output, nil
 }
 
 func sanityCheck(props ArrivalsProps) error {
