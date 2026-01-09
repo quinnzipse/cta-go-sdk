@@ -8,7 +8,7 @@ const (
 
 type Station struct {
 	Name string
-	Id   uint16
+	Id   string
 }
 
 type LatLon struct {

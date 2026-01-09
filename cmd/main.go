@@ -23,10 +23,10 @@ func main() {
 		Key: key,
 	})
 
-	fmt.Println("Grabbing info for Division (sid: 40320)")
+	fmt.Println("Grabbing info for Clark/Lake (sid: 40380)")
 
 	arrivals, err := tracker.Arrivals(traintracker.ArrivalsProps{
-		MapId: "40590",
+		MapId: "40380",
 	})
 
 	if err != nil {
