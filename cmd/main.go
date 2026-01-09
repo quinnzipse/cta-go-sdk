@@ -55,6 +55,8 @@ func main() {
 
 		if eta.IsSch {
 			flags += "⏰"
+			fmt.Printf("Run %s\t\t%s    \tdue %s\n", eta.Rn, eta.DestNm, flags)
+			continue
 		}
 
 		if eta.IsFlt {
@@ -66,9 +68,9 @@ func main() {
 		}
 
 		if eta.IsApp {
-			fmt.Printf("Run %s\t\t%s    \tdue %s         \t\t(%.5f, %.5f) hdg %d\n", eta.Rn, eta.DestNm, flags, eta.Lat, eta.Lon, eta.Heading)
+			fmt.Printf("Run %s\t\t%s    \tdue %s         \t\t(%.5f, %.5f) hdg %d\n", eta.Rn, eta.DestNm, flags, *eta.Lat, *eta.Lon, eta.Heading)
 		} else {
-			fmt.Printf("Run %s\t\t%s    \tin %.0f mins %s\t\t(%.5f, %.5f) hdg %d\n", eta.Rn, eta.DestNm, math.Round(eta.ArrT.Sub(time.Now()).Minutes()), flags, eta.Lat, eta.Lon, eta.Heading)
+			fmt.Printf("Run %s\t\t%s    \tin %.0f mins %s\t\t(%.5f, %.5f) hdg %d\n", eta.Rn, eta.DestNm, math.Round(eta.ArrT.Sub(time.Now()).Minutes()), flags, *eta.Lat, *eta.Lon, eta.Heading)
 		}
 	}
 

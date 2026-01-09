@@ -91,7 +91,7 @@ type Eta struct {
 	IsDly   bool
 	IsFlt   bool
 	Flags   []string
-	Lat     float64
-	Lon     float64
-	Heading int16
+	Lat     *float64
+	Lon     *float64
+	Heading *int16
 }

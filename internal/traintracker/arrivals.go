@@ -126,19 +126,32 @@ func (r ArrivalApiResponse) toArrivalResponse() (*ArrivalResponse, error) {
 
 	for i, eta := range r.Ctatt.Eta {
 
-		lat, err := strconv.ParseFloat(eta.Lat, 64)
-		if err != nil {
-			return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+		var lat *float64
+		if eta.Lat != "" {
+			parsed, err := strconv.ParseFloat(eta.Lat, 64)
+			if err != nil {
+				return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+			}
+			lat = &parsed
 		}
 
-		lon, err := strconv.ParseFloat(eta.Lon, 64)
-		if err != nil {
-			return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+		var lon *float64
+		if eta.Lon != "" {
+			parsed, err := strconv.ParseFloat(eta.Lon, 64)
+			if err != nil {
+				return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+			}
+			lon = &parsed
 		}
 
-		heading, err := strconv.ParseInt(eta.Heading, 10, 16)
-		if err != nil {
-			return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+		var heading *int16
+		if eta.Heading != "" {
+			parsed, err := strconv.ParseInt(eta.Heading, 10, 16)
+			if err != nil {
+				return nil, fmt.Errorf("Error on eta[%d]\n\n %w", i, err)
+			}
+			h := int16(parsed)
+			heading = &h
 		}
 
 		trDr, err := strconv.ParseInt(eta.TrDr, 10, 16)
@@ -175,7 +188,7 @@ func (r ArrivalApiResponse) toArrivalResponse() (*ArrivalResponse, error) {
 			Flags:   eta.Flags,
 			Lat:     lat,
 			Lon:     lon,
-			Heading: int16(heading),
+			Heading: heading,
 		})
 
 	}
