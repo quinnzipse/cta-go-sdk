@@ -221,7 +221,7 @@ func TestLocations_Mocking(t *testing.T) {
 	mockResponse := `
 { "ctatt": { "tmst":"2024-01-15T10:30:00", "errCd":"0", "errNm":"",
   "route": [
-   { "rt":"Red", "position": [
+   { "@name":"Red", "train": [
     { "trainId":"401", "rn":"401", "rt":"Red", "trDr":"1", "lat":"41.8781", "lon":"-87.6298", "heading":"180",
       "nextStpId":"40100", "nextStpNm":"Chicago", "nextStpTm":"2024-01-15T10:35:00",
       "prevStpId":"40090", "prevStpNm":"Lake", "prevStpTm":"2024-01-15T10:25:00",

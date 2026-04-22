@@ -106,8 +106,8 @@ type PositionsApiResponse struct {
 }
 
 type ApiRoutePos struct {
-	Rt       string         `json:"rt"`
-	Position []ApiTrainPos  `json:"position"`
+	Rt       string         `json:"@name"`
+	Position []ApiTrainPos  `json:"train"`
 }
 
 type ApiTrainPos struct {
@@ -178,30 +178,36 @@ const followPath = "/api/1.0/ttfollow.aspx"
 
 type FollowApiResponse struct {
 	Ctatt struct {
-		Tmst   string        `json:"tmst"`
-		ErrCd  string        `json:"errCd"`
-		ErrNm  string        `json:"errNm"`
-		Run   string        `json:"run"`
-		Rt    string        `json:"rt"`
-		DestNm string        `json:"destNm"`
-		Route ApiFollowRoute `json:"route"`
+		Tmst    string              `json:"tmst"`
+		ErrCd   string              `json:"errCd"`
+		ErrNm   string              `json:"errNm"`
+		Position ApiFollowPosition `json:"position"`
+		Eta     []ApiFollowEta    `json:"eta"`
 	} `json:"ctatt"`
 }
 
-type ApiFollowRoute struct {
-	Position []ApiFollowPosition `json:"position"`
+type ApiFollowPosition struct {
+	Lat     string `json:"lat"`
+	Lon     string `json:"lon"`
+	Heading string `json:"heading"`
 }
 
-type ApiFollowPosition struct {
+type ApiFollowEta struct {
+	StaId   string `json:"staId"`
 	StpId   string `json:"stpId"`
-	StpNm   string `json:"stpNm"`
+	StaNm   string `json:"staNm"`
 	StpDe   string `json:"stpDe"`
-	Prdt    string `json:"prdt"`
-	ArrT    string `json:"arrT"`
-	IsApp   string `json:"isApp"`
-	IsSch   string `json:"isSch"`
-	IsDly   string `json:"isDly"`
-	IsFlt   string `json:"isFlt"`
+	Rn      string `json:"rn"`
+	Rt      string `json:"rt"`
+	DestSt  string `json:"destSt"`
+	DestNm  string `json:"destNm"`
+	TrDr   string `json:"trDr"`
+	Prdt   string `json:"prdt"`
+	ArrT   string `json:"arrT"`
+	IsApp  string `json:"isApp"`
+	IsSch  string `json:"isSch"`
+	IsDly  string `json:"isDly"`
+	IsFlt  string `json:"isFlt"`
 }
 
 type FollowResponse struct {
@@ -209,19 +215,29 @@ type FollowResponse struct {
 }
 
 type FollowCtatt struct {
-	Tmst    time.Time
-	ErrCd   string
-	ErrNm   string
-	Run    string
-	Rt     string
-	DestNm string
-	Route  []FollowPosition
+	Tmst     time.Time
+	ErrCd    string
+	ErrNm    string
+	Position *FollowTrainPosition
+	Eta      []FollowStopPrediction
 }
 
-type FollowPosition struct {
+type FollowTrainPosition struct {
+	Lat     *float64
+	Lon     *float64
+	Heading *int16
+}
+
+type FollowStopPrediction struct {
+	StaId   string
 	StpId   string
-	StpNm   string
+	StaNm   string
 	StpDe   string
+	Rn      string
+	Rt      string
+	DestSt  string
+	DestNm  string
+	TrDr   int16
 	Prdt   *time.Time
 	ArrT   *time.Time
 	IsApp  bool
