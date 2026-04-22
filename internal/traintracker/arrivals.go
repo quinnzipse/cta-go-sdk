@@ -32,12 +32,12 @@ func (tt TrainTracker) RawArrivals(props ArrivalsProps) (*ArrivalApiResponse, er
 		return nil, err
 	}
 
-	url, err := generateArrivalsUrl(props, tt.key)
+	url, err := generateArrivalsUrl(props, tt.key, tt.baseUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := http.Get(url.String())
+	resp, err := tt.httpClient.Get(url.String())
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +55,8 @@ func (tt TrainTracker) Arrivals(props ArrivalsProps) (*ArrivalResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("RawArrivals -> res:\n%+v\n", res)
 
 	return res.toArrivalResponse()
 }
@@ -239,8 +241,8 @@ func sanityCheck(props ArrivalsProps) error {
 	return nil
 }
 
-func generateArrivalsUrl(props ArrivalsProps, key string) (*nurl.URL, error) {
-	fullUrl := CtaBaseUrl + path
+func generateArrivalsUrl(props ArrivalsProps, key, baseUrl string) (*nurl.URL, error) {
+	fullUrl := baseUrl + path
 
 	// Parse the base URL first
 	u, err := nurl.Parse(fullUrl)
