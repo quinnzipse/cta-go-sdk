@@ -56,7 +56,6 @@ func (tt TrainTracker) Arrivals(props ArrivalsProps) (*ArrivalResponse, error) {
 		return nil, err
 	}
 
-	fmt.Printf("RawArrivals -> res:\n%+v\n", res)
 
 	return res.toArrivalResponse()
 }
