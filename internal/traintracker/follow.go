@@ -72,48 +72,79 @@ func (r FollowApiResponse) toFollowResponse() (*FollowResponse, error) {
 		return nil, err
 	}
 
-	var positions []FollowPosition
-	for i, pos := range r.Ctatt.Route.Position {
+	var trainPos *FollowTrainPosition
+	if r.Ctatt.Position.Lat != "" {
+		lat, err := strconv.ParseFloat(r.Ctatt.Position.Lat, 64)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing lat: %w", err)
+		}
+		lon, err := strconv.ParseFloat(r.Ctatt.Position.Lon, 64)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing lon: %w", err)
+		}
+		heading, err := strconv.ParseInt(r.Ctatt.Position.Heading, 10, 16)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing heading: %w", err)
+		}
+		h := int16(heading)
+	 trainPos = &FollowTrainPosition{
+			Lat:     &lat,
+			Lon:     &lon,
+			Heading: &h,
+		}
+	}
+
+	var stops []FollowStopPrediction
+	for i, eta := range r.Ctatt.Eta {
 		var prdt *time.Time
-		if pos.Prdt != "" && pos.Prdt != "0" && pos.Prdt != "?" {
-			parsed, err := time.ParseInLocation("2006-01-02T15:04:05", pos.Prdt, timeLoc)
+		if eta.Prdt != "" && eta.Prdt != "0" && eta.Prdt != "?" {
+			parsed, err := time.ParseInLocation("2006-01-02T15:04:05", eta.Prdt, timeLoc)
 			if err != nil {
-				return nil, fmt.Errorf("Error on position[%d]: %w", i, err)
+				return nil, fmt.Errorf("Error on eta[%d]: %w", i, err)
 			}
 			prdt = &parsed
 		}
 
 		var arrT *time.Time
-		if pos.ArrT != "" && pos.ArrT != "0" && pos.ArrT != "?" {
-			parsed, err := time.ParseInLocation("2006-01-02T15:04:05", pos.ArrT, timeLoc)
+		if eta.ArrT != "" && eta.ArrT != "0" && eta.ArrT != "?" {
+			parsed, err := time.ParseInLocation("2006-01-02T15:04:05", eta.ArrT, timeLoc)
 			if err != nil {
-				return nil, fmt.Errorf("Error on position[%d]: %w", i, err)
+				return nil, fmt.Errorf("Error on eta[%d]: %w", i, err)
 			}
 			arrT = &parsed
 		}
 
-		positions = append(positions, FollowPosition{
-			StpId: pos.StpId,
-			StpNm: pos.StpNm,
-			StpDe: pos.StpDe,
-			Prdt:  prdt,
-			ArrT:  arrT,
-			IsApp: pos.IsApp == "1",
-			IsSch: pos.IsSch == "1",
-			IsDly: pos.IsDly == "1",
-			IsFlt: pos.IsFlt == "1",
+		trDr, err := strconv.ParseInt(eta.TrDr, 10, 16)
+		if err != nil {
+			return nil, fmt.Errorf("Error on eta[%d] trDr: %w", i, err)
+		}
+
+		stops = append(stops, FollowStopPrediction{
+			StaId:  eta.StaId,
+			StpId:  eta.StpId,
+			StaNm:  eta.StaNm,
+			StpDe:  eta.StpDe,
+			Rn:     eta.Rn,
+			Rt:     eta.Rt,
+			DestSt: eta.DestSt,
+			DestNm: eta.DestNm,
+			TrDr:   int16(trDr),
+			Prdt:   prdt,
+			ArrT:   arrT,
+			IsApp:  eta.IsApp == "1",
+			IsSch:  eta.IsSch == "1",
+			IsDly:  eta.IsDly == "1",
+			IsFlt:  eta.IsFlt == "1",
 		})
 	}
 
 	return &FollowResponse{
 		Ctatt: FollowCtatt{
-			Tmst:    tmst,
-			ErrCd:   r.Ctatt.ErrCd,
-			ErrNm:   r.Ctatt.ErrNm,
-			Run:    r.Ctatt.Run,
-			Rt:     r.Ctatt.Rt,
-			DestNm: r.Ctatt.DestNm,
-			Route:  positions,
+			Tmst:     tmst,
+			ErrCd:    r.Ctatt.ErrCd,
+			ErrNm:    r.Ctatt.ErrNm,
+			Position: trainPos,
+			Eta:      stops,
 		},
 	}, nil
 }

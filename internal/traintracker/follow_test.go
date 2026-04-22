@@ -95,35 +95,47 @@ func TestFollow_Mocking(t *testing.T) {
 			"tmst": "2024-01-15T10:30:00",
 			"errCd": "0",
 			"errNm": "",
-			"run": "401",
-			"rt": "Red",
-			"destNm": "Howard",
-			"route": {
-				"position": [
-					{
-						"stpId": "40090",
-						"stpNm": "Lake",
-						"stpDe": "Service toward Howard",
-						"prdt": "2024-01-15T10:32:00",
-						"arrT": "2024-01-15T10:32:00",
-						"isApp": "1",
-						"isSch": "0",
-						"isDly": "0",
-						"isFlt": "0"
-					},
-					{
-						"stpId": "40100",
-						"stpNm": "Chicago",
-						"stpDe": "Service toward Howard",
-						"prdt": "2024-01-15T10:35:00",
-						"arrT": "2024-01-15T10:35:00",
-						"isApp": "0",
-						"isSch": "0",
-						"isDly": "0",
-						"isFlt": "0"
-					}
-				]
-			}
+			"position": {
+				"lat": "41.8842",
+				"lon": "-87.6729",
+				"heading": "180"
+			},
+			"eta": [
+				{
+					"staId": "40090",
+					"stpId": "30090",
+					"staNm": "Lake",
+					"stpDe": "Service toward Howard",
+					"rn": "401",
+					"rt": "Red",
+					"destSt": "30173",
+					"destNm": "Howard",
+					"trDr": "1",
+					"prdt": "2024-01-15T10:32:00",
+					"arrT": "2024-01-15T10:32:00",
+					"isApp": "1",
+					"isSch": "0",
+					"isDly": "0",
+					"isFlt": "0"
+				},
+				{
+					"staId": "40100",
+					"stpId": "30100",
+					"staNm": "Chicago",
+					"stpDe": "Service toward Howard",
+					"rn": "401",
+					"rt": "Red",
+					"destSt": "30173",
+					"destNm": "Howard",
+					"trDr": "1",
+					"prdt": "2024-01-15T10:35:00",
+					"arrT": "2024-01-15T10:35:00",
+					"isApp": "0",
+					"isSch": "0",
+					"isDly": "0",
+					"isFlt": "0"
+				}
+			]
 		}
 	}`
 
@@ -142,20 +154,21 @@ func TestFollow_Mocking(t *testing.T) {
 			},
 			wantErr: false,
 			checkFn: func(t *testing.T, resp *traintracker.FollowResponse) {
-				if resp.Ctatt.Run != "401" {
-					t.Errorf("expected run 401, got %s", resp.Ctatt.Run)
+				if resp.Ctatt.Position == nil {
+					t.Errorf("expected position, got nil")
+				} else {
+					if *resp.Ctatt.Position.Lat != 41.8842 {
+						t.Errorf("expected lat 41.8842, got %f", *resp.Ctatt.Position.Lat)
+					}
+					if *resp.Ctatt.Position.Heading != 180 {
+						t.Errorf("expected heading 180, got %d", *resp.Ctatt.Position.Heading)
+					}
 				}
-				if resp.Ctatt.Rt != "Red" {
-					t.Errorf("expected route Red, got %s", resp.Ctatt.Rt)
+				if len(resp.Ctatt.Eta) != 2 {
+					t.Errorf("expected 2 stops, got %d", len(resp.Ctatt.Eta))
 				}
-				if resp.Ctatt.DestNm != "Howard" {
-					t.Errorf("expected destination Howard, got %s", resp.Ctatt.DestNm)
-				}
-				if len(resp.Ctatt.Route) != 2 {
-					t.Errorf("expected 2 stops, got %d", len(resp.Ctatt.Route))
-				}
-				if resp.Ctatt.Route[0].StpNm != "Lake" {
-					t.Errorf("expected first stop Lake, got %s", resp.Ctatt.Route[0].StpNm)
+				if resp.Ctatt.Eta[0].StaNm != "Lake" {
+					t.Errorf("expected first stop Lake, got %s", resp.Ctatt.Eta[0].StaNm)
 				}
 			},
 		},
