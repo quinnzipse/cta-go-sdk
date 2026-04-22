@@ -23,55 +23,167 @@ func main() {
 		Key: key,
 	})
 
-	fmt.Println("Grabbing info for Clark/Lake (sid: 40380)")
+	displayBlueLineLocations(tracker)
 
-	arrivals, err := tracker.Arrivals(traintracker.ArrivalsProps{
-		MapId: "40380",
+	fmt.Println("\n" + strings.Repeat("=", 60) + "\n")
+
+	displayBlueLineArrivals(tracker)
+}
+
+func displayBlueLineLocations(tracker traintracker.TrainTracker) {
+	fmt.Println("=== Blue Line Train Locations ===")
+
+	locations, err := tracker.Locations(traintracker.LocationsProps{
+		Rt: "Blue",
 	})
 
 	if err != nil {
-		fmt.Printf("Hit an error\n\n%v", err)
-	}
-
-	fmt.Println("Retrieved info")
-	if arrivals.Ctatt.ErrCd != "0" {
-		fmt.Printf("Error (@%s) %s %s", arrivals.Ctatt.Tmst.Format(time.Kitchen), arrivals.Ctatt.ErrCd, arrivals.Ctatt.ErrNm)
-	}
-
-	fmt.Printf("\n----------------\nTrain Schedule (as of %s)\n----------------\n", arrivals.Ctatt.Tmst.Format(time.Kitchen))
-
-	etas := arrivals.Ctatt.Eta
-
-	if len(etas) == 0 {
-		fmt.Println("No Arrivals")
+		fmt.Printf("Error fetching locations: %v\n", err)
 		return
 	}
 
-	fmt.Printf("Station: %s\n\n", arrivals.Ctatt.Eta[0].StaNm)
+	if locations.Ctatt.ErrCd != "0" {
+		fmt.Printf("API Error (%s): %s\n", locations.Ctatt.ErrCd, locations.Ctatt.ErrNm)
+		return
+	}
 
-	for _, eta := range etas {
+	fmt.Printf("Response: ErrCd=%s, Route count: %d\n", locations.Ctatt.ErrCd, len(locations.Ctatt.Route))
 
+	if locations.Ctatt.Route != nil && len(locations.Ctatt.Route) > 0 {
+		for _, r := range locations.Ctatt.Route {
+			fmt.Printf("DEBUG: Route.Rt='%s', Position len=%d\n", r.Rt, len(r.Position))
+			if len(r.Position) == 0 {
+				fmt.Println("No trains in this route")
+				continue
+			}
+
+			for _, train := range r.Position {
+				flags := ""
+				if train.IsDly {
+					flags += " DELAYED"
+				}
+				if train.IsSch {
+					flags += " SCHEDULED"
+				}
+
+				fmt.Printf("  Run %s | (% .5f, % .5f) | hdg %d | next: %s (%s)%s\n",
+				 train.RunNumber,
+				 train.Lat, train.Lon,
+				 train.Heading,
+				 train.NextStpNm, train.NextStpId,
+				 flags)
+			}
+		}
+	} else {
+		fmt.Println("No train data returned")
+	}
+
+	if locations.Ctatt.Route == nil || len(locations.Ctatt.Route) == 0 {
+		fmt.Println("No train data returned - trying without route filter...")
+
+		allLocs, err := tracker.Locations(traintracker.LocationsProps{})
+		if err != nil {
+			fmt.Printf("Error fetching all locations: %v\n", err)
+			return
+		}
+		fmt.Printf("All routes count: %d\n", len(allLocs.Ctatt.Route))
+		for _, r := range allLocs.Ctatt.Route {
+			fmt.Printf("  Route: %s has %d trains\n", r.Rt, len(r.Position))
+		}
+		return
+	}
+
+	fmt.Printf("As of %s\n\n", locations.Ctatt.Tmst.Format(time.Kitchen))
+
+	for _, route := range locations.Ctatt.Route {
+		fmt.Printf("Route: %s (%d trains)\n", route.Rt, len(route.Position))
+
+		for _, train := range route.Position {
+			flags := ""
+			if train.IsDly {
+				flags += " DELAYED"
+			}
+			if train.IsSch {
+				flags += " SCHEDULED"
+			}
+
+			fmt.Printf("  Run %s | (% .5f, % .5f) | hdg %d | next: %s (%s)%s\n",
+			 train.RunNumber,
+			 train.Lat, train.Lon,
+			 train.Heading,
+			 train.NextStpNm, train.NextStpId,
+			 flags)
+		}
+	}
+}
+
+func displayBlueLineArrivals(tracker traintracker.TrainTracker) {
+	fmt.Println("=== Blue Line Arrivals ===")
+
+	blueLineStations := map[string]string{
+		"30062": "Division",
+		"30100": "O'Hare",
+		"40380": "Clark/Lake",
+		"40410": "Jefferson Park",
+		"40510": "Rosemont",
+		"40580": "Logan Square",
+	}
+
+	stationId := "30062"
+	stationName := blueLineStations[stationId]
+
+	fmt.Printf("Fetching Blue Line arrivals for %s (stop: %s)\n", stationName, stationId)
+
+	arrivals, err := tracker.Arrivals(traintracker.ArrivalsProps{
+		StpId: stationId,
+		Rt:    "Blue",
+		Max:   5,
+	})
+
+	if err != nil {
+		fmt.Printf("Error fetching arrivals: %v\n", err)
+		return
+	}
+
+	if arrivals.Ctatt.ErrCd != "0" {
+		fmt.Printf("API Error (%s): %s\n", arrivals.Ctatt.ErrCd, arrivals.Ctatt.ErrNm)
+		return
+	}
+
+	if arrivals.Ctatt.Eta == nil {
+		fmt.Println("No ETA data returned")
+		return
+	}
+
+	fmt.Printf("As of %s\n\n", arrivals.Ctatt.Tmst.Format(time.Kitchen))
+
+	if len(arrivals.Ctatt.Eta) == 0 {
+		fmt.Println("No arrivals")
+		return
+	}
+
+	for _, eta := range arrivals.Ctatt.Eta {
 		flags := ""
 
 		if eta.IsSch {
-			flags += "⏰"
-			fmt.Printf("Run %s\t\t%s    \tdue %s\n", eta.Rn, eta.DestNm, flags)
-			continue
-		}
-
-		if eta.IsFlt {
-			flags += "!"
+			flags += " [SCHEDULED]"
 		}
 
 		if eta.IsDly {
-			flags += "⏳"
+			flags += " [DELAYED]"
+		}
+
+		if eta.IsFlt {
+			flags += " [FAULT]"
 		}
 
 		if eta.IsApp {
-			fmt.Printf("Run %s\t\t%s    \tdue %s         \t\t(%.5f, %.5f) hdg %d\n", eta.Rn, eta.DestNm, flags, *eta.Lat, *eta.Lon, eta.Heading)
+			fmt.Printf("  Run %s -> %s | DUE NOW | (% .5f, % .5f)\n",
+				eta.Rn, eta.DestNm, *eta.Lat, *eta.Lon)
 		} else {
-			fmt.Printf("Run %s\t\t%s    \tin %.0f mins %s\t\t(%.5f, %.5f) hdg %d\n", eta.Rn, eta.DestNm, math.Round(eta.ArrT.Sub(time.Now()).Minutes()), flags, *eta.Lat, *eta.Lon, eta.Heading)
+			waitMins := math.Round(eta.ArrT.Sub(time.Now()).Minutes())
+			fmt.Printf("  Run %s -> %s | in %.0f mins%s | (% .5f, % .5f)\n",
+				eta.Rn, eta.DestNm, waitMins, flags, *eta.Lat, *eta.Lon)
 		}
 	}
-
 }
