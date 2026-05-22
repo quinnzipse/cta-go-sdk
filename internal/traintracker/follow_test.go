@@ -13,12 +13,12 @@ func TestFollow_Validation(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		input  traintracker.FollowProps
+		input   traintracker.FollowProps
 		wantErr bool
 	}{
 		{
 			name:    "empty RunNumber",
-			input:  traintracker.FollowProps{},
+			input:   traintracker.FollowProps{},
 			wantErr: true,
 		},
 		{
@@ -58,7 +58,7 @@ func TestFollow_Validation(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`{"err": "Invalid"}`))
+				w.Write([]byte(`{"err": "Invalid"}`)) //nolint:errcheck
 			}))
 			defer server.Close()
 
@@ -142,9 +142,9 @@ func TestFollow_Mocking(t *testing.T) {
 	tests := []struct {
 		name         string
 		mockResponse string
-		props       traintracker.FollowProps
-		wantErr     bool
-		checkFn     func(*testing.T, *traintracker.FollowResponse)
+		props        traintracker.FollowProps
+		wantErr      bool
+		checkFn      func(*testing.T, *traintracker.FollowResponse)
 	}{
 		{
 			name:         "valid response with two stops",
@@ -189,7 +189,7 @@ func TestFollow_Mocking(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(tt.mockResponse))
+				w.Write([]byte(tt.mockResponse)) //nolint:errcheck
 			}))
 			defer server.Close()
 

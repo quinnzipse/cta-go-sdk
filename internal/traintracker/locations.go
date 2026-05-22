@@ -105,20 +105,22 @@ func (r PositionsApiResponse) toPositionsResponse() (*PositionsResponse, error) 
 
 			var nextSrt *time.Time
 			if train.NextStpTm != "" && train.NextStpTm != "0" && train.NextStpTm != "?" {
-				parsed, err := time.ParseInLocation("2006-01-02T15:04:05", train.NextStpTm, timeLoc)
+				var nxt time.Time
+				nxt, err = time.ParseInLocation("2006-01-02T15:04:05", train.NextStpTm, timeLoc)
 				if err != nil {
 					return nil, fmt.Errorf("Error on route[%s] train[%d]: %w", route.Rt, i, err)
 				}
-				nextSrt = &parsed
+				nextSrt = &nxt
 			}
 
 			var prevSrt *time.Time
 			if train.PrevStpTm != "" && train.PrevStpTm != "0" && train.PrevStpTm != "?" {
-				parsed, err := time.ParseInLocation("2006-01-02T15:04:05", train.PrevStpTm, timeLoc)
+				var prv time.Time
+				prv, err = time.ParseInLocation("2006-01-02T15:04:05", train.PrevStpTm, timeLoc)
 				if err != nil {
 					return nil, fmt.Errorf("Error on route[%s] train[%d]: %w", route.Rt, i, err)
 				}
-				prevSrt = &parsed
+				prevSrt = &prv
 			}
 
 			trDr, err := strconv.ParseInt(train.TrDr, 10, 16)
@@ -152,8 +154,8 @@ func (r PositionsApiResponse) toPositionsResponse() (*PositionsResponse, error) 
 		routes = append(routes, routePos)
 	}
 
-return &PositionsResponse{
-	  Ctatt: CtattPos{
+	return &PositionsResponse{
+		Ctatt: CtattPos{
 			Tmst:  tmst,
 			ErrCd: r.Ctatt.ErrCd,
 			ErrNm: r.Ctatt.ErrNm,

@@ -11,6 +11,8 @@ import (
 	"git.quinnzipse.dev/cta-go-sdk/internal/traintracker"
 )
 
+var getStopName = traintracker.GetStopName
+
 func main() {
 	fmt.Println("Initializing Train Tracker")
 
@@ -49,7 +51,7 @@ func displayBlueLineLocations(tracker traintracker.TrainTracker) {
 
 	fmt.Printf("Response: ErrCd=%s, Route count: %d\n", locations.Ctatt.ErrCd, len(locations.Ctatt.Route))
 
-	if locations.Ctatt.Route != nil && len(locations.Ctatt.Route) > 0 {
+	if len(locations.Ctatt.Route) > 0 {
 		for _, r := range locations.Ctatt.Route {
 			fmt.Printf("DEBUG: Route.Rt='%s', Position len=%d\n", r.Rt, len(r.Position))
 			if len(r.Position) == 0 {
@@ -67,18 +69,18 @@ func displayBlueLineLocations(tracker traintracker.TrainTracker) {
 				}
 
 				fmt.Printf("  Run %s | (% .5f, % .5f) | hdg %d | next: %s (%s)%s\n",
-				 train.RunNumber,
-				 train.Lat, train.Lon,
-				 train.Heading,
-				 train.NextStpNm, train.NextStpId,
-				 flags)
+					train.RunNumber,
+					train.Lat, train.Lon,
+					train.Heading,
+					train.NextStpNm, train.NextStpId,
+					flags)
 			}
 		}
 	} else {
 		fmt.Println("No train data returned")
 	}
 
-	if locations.Ctatt.Route == nil || len(locations.Ctatt.Route) == 0 {
+	if len(locations.Ctatt.Route) == 0 {
 		fmt.Println("No train data returned - trying without route filter...")
 
 		allLocs, err := tracker.Locations(traintracker.LocationsProps{})
@@ -108,11 +110,11 @@ func displayBlueLineLocations(tracker traintracker.TrainTracker) {
 			}
 
 			fmt.Printf("  Run %s | (% .5f, % .5f) | hdg %d | next: %s (%s)%s\n",
-			 train.RunNumber,
-			 train.Lat, train.Lon,
-			 train.Heading,
-			 train.NextStpNm, train.NextStpId,
-			 flags)
+				train.RunNumber,
+				train.Lat, train.Lon,
+				train.Heading,
+				train.NextStpNm, getStopName(train.NextStpId),
+				flags)
 		}
 	}
 }
@@ -181,7 +183,7 @@ func displayBlueLineArrivals(tracker traintracker.TrainTracker) {
 			fmt.Printf("  Run %s -> %s | DUE NOW | (% .5f, % .5f)\n",
 				eta.Rn, eta.DestNm, *eta.Lat, *eta.Lon)
 		} else {
-			waitMins := math.Round(eta.ArrT.Sub(time.Now()).Minutes())
+			waitMins := math.Round(time.Until(eta.ArrT).Minutes())
 			fmt.Printf("  Run %s -> %s | in %.0f mins%s | (% .5f, % .5f)\n",
 				eta.Rn, eta.DestNm, waitMins, flags, *eta.Lat, *eta.Lon)
 		}

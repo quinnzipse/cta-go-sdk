@@ -140,8 +140,8 @@ func TestLocations_UrlGeneration(t *testing.T) {
 	}{
 		{
 			name:    "empty props",
-			props:  traintracker.LocationsProps{},
-			key:    "test-key",
+			props:   traintracker.LocationsProps{},
+			key:     "test-key",
 			wantErr: false,
 			wantParams: []string{
 				"outputType=JSON",
@@ -242,26 +242,26 @@ func TestLocations_Mocking(t *testing.T) {
 		{
 			name:         "valid response with two routes",
 			mockResponse: mockResponse,
-props:        traintracker.LocationsProps{},
-		wantRoutes:   1,
-		wantErr:     false,
-		checkFn: func(t *testing.T, resp *traintracker.PositionsResponse) {
-			if len(resp.Ctatt.Route) != 1 {
-				t.Errorf("expected 1 route, got %d", len(resp.Ctatt.Route))
-			}
-			if resp.Ctatt.Route[0].Rt != "Red" {
-				t.Errorf("expected first route Red, got %s", resp.Ctatt.Route[0].Rt)
-			}
-			if resp.Ctatt.Route[0].Position[0].Lat != 41.8781 {
-				t.Errorf("expected lat 41.8781, got %f", resp.Ctatt.Route[0].Position[0].Lat)
-			}
+			props:        traintracker.LocationsProps{},
+			wantRoutes:   1,
+			wantErr:      false,
+			checkFn: func(t *testing.T, resp *traintracker.PositionsResponse) {
+				if len(resp.Ctatt.Route) != 1 {
+					t.Errorf("expected 1 route, got %d", len(resp.Ctatt.Route))
+				}
+				if resp.Ctatt.Route[0].Rt != "Red" {
+					t.Errorf("expected first route Red, got %s", resp.Ctatt.Route[0].Rt)
+				}
+				if resp.Ctatt.Route[0].Position[0].Lat != 41.8781 {
+					t.Errorf("expected lat 41.8781, got %f", resp.Ctatt.Route[0].Position[0].Lat)
+				}
+			},
 		},
-	},
 		{
 			name:         "error response",
 			mockResponse: `{"err": "Invalid API Key"}`,
-			props:       traintracker.LocationsProps{},
-			wantErr:     true,
+			props:        traintracker.LocationsProps{},
+			wantErr:      true,
 		},
 	}
 
@@ -272,7 +272,7 @@ props:        traintracker.LocationsProps{},
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(tt.mockResponse))
+				w.Write([]byte(tt.mockResponse)) //nolint:errcheck
 			}))
 			defer server.Close()
 
@@ -281,7 +281,7 @@ props:        traintracker.LocationsProps{},
 			tracker := traintracker.NewTrainTracker(traintracker.TrainTrackerProps{
 				Key:        "test-key",
 				HttpClient: client,
-				BaseUrl:   server.URL,
+				BaseUrl:    server.URL,
 			})
 
 			resp, err := tracker.Locations(tt.props)

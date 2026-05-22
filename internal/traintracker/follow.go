@@ -87,14 +87,14 @@ func (r FollowApiResponse) toFollowResponse() (*FollowResponse, error) {
 			return nil, fmt.Errorf("Error parsing heading: %w", err)
 		}
 		h := int16(heading)
-	 trainPos = &FollowTrainPosition{
+		trainPos = &FollowTrainPosition{
 			Lat:     &lat,
 			Lon:     &lon,
 			Heading: &h,
 		}
 	}
 
-	var stops []FollowStopPrediction
+	stops := make([]FollowStopPrediction, 0, len(r.Ctatt.Eta))
 	for i, eta := range r.Ctatt.Eta {
 		var prdt *time.Time
 		if eta.Prdt != "" && eta.Prdt != "0" && eta.Prdt != "?" {

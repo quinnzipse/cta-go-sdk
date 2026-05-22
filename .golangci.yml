@@ -4,8 +4,8 @@ run:
   modules-download-mode: readonly
 
 output:
-  formats: 
-    - colored-line-number
+  formats:
+    - format: colored-line-number
   print-issued-lines: true
   print-linter-name: true
 
@@ -15,7 +15,6 @@ issues:
   exclude-dirs:
     - vendor
     - third_party
-  # Avoid noisy style warnings for generated code
   exclude:
     - "generated"
   fix: false
@@ -24,49 +23,29 @@ linters-settings:
   govet:
     enable-all: true
     disable:
-      - fieldalignment # too opinionated, sometimes noisy
+      - fieldalignment
   staticcheck:
     checks: ["all"]
-  stylecheck:
-    checks: ["all"]
-  revive:
-    enable-all-rules: true
-    severity: warning
-    confidence: 0.8
-    rules:
-      - name: var-naming
-      - name: indent-error-flow
-      - name: unexported-return
-      - name: exported
-  gofumpt:
-    extra-rules: true
-  gocyclo:
-    min-complexity: 10
-  funlen:
-    lines: 60
-    statements: 40
-  goconst:
-    min-len: 2
-    min-occurrences: 3
-  depguard:
-    list-type: blacklist
-    packages:
-      - github.com/pkg/errors
-    include-go-root: false
-    message: "Use the standard 'errors' package instead of pkg/errors"
-  dupl:
-    threshold: 100
   misspell:
     locale: US
   errcheck:
     check-type-assertions: true
     check-blank: true
-  nakedret:
-    max-func-lines: 30
   goimports:
-    local-prefixes: your_project_name
+    local-prefixes: git.quinnzipse.dev/cta-go-sdk
 
 linters:
-  enable-all: true
+  enable:
+    - errcheck
+    - gofmt
+    - goimports
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - prealloc
+    - staticcheck
+    - unconvert
+    - unused
   disable:
     - tenv

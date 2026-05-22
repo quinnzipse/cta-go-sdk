@@ -56,12 +56,11 @@ func (tt TrainTracker) Arrivals(props ArrivalsProps) (*ArrivalResponse, error) {
 		return nil, err
 	}
 
-
 	return res.toArrivalResponse()
 }
 
 func decodeAPIResponse[T any, E any](resp *http.Response) (*T, *E, error) {
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -254,7 +253,7 @@ func generateArrivalsUrl(props ArrivalsProps, key, baseUrl string) (*nurl.URL, e
 	params.Add("outputType", "JSON")
 
 	if props.MapId != "" {
-		params.Add("mapid", string(props.MapId))
+		params.Add("mapid", props.MapId)
 	}
 
 	if props.StpId != "" {
