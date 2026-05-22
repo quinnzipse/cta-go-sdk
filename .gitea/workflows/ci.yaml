@@ -24,6 +24,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Install OS dependencies
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq golangci-lint build-essential
+
+      - name: Install Go dependencies
+        run: go mod download
+
       - name: Check formatting
         run: |
           unformatted=$(gofmt -l .)
@@ -42,9 +50,7 @@ jobs:
         run: go build ./...
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
+        run: golangci-lint run
 
       - name: Unit tests
         run: go test -v -count=1 -race -shuffle=on ./...
