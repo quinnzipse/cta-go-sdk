@@ -12,10 +12,11 @@ jobs:
     steps:
       - name: Install OS dependencies
         run: |
-          apt-get update -qq
-          apt-get install -y -qq git golangci-lint build-essential
+          apt update 
+          apt install -y -qq git golangci-lint build-essential
 
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
