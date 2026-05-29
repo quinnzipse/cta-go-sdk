@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"git.quinnzipse.dev/cta-go-sdk/internal/traintracker"
+	"git.zipse.cloud/zippy/cta-go-sdk/traintracker"
 )
 
 var getStopName = traintracker.GetStopName

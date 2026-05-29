@@ -1,4 +1,4 @@
-module git.quinnzipse.dev/cta-go-sdk
+module git.zipse.cloud/zippy/cta-go-sdk
 
 go 1.22.2
 

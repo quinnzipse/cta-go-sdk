@@ -3,7 +3,7 @@ package traintracker_test
 import (
 	"testing"
 
-	"git.quinnzipse.dev/cta-go-sdk/internal/traintracker"
+	"git.zipse.cloud/zippy/cta-go-sdk/traintracker"
 )
 
 func TestArrivals_Validation(t *testing.T) {

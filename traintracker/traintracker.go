@@ -5,15 +5,15 @@ import "net/http"
 const DefaultBaseUrl = "https://lapi.transitchicago.com"
 
 type TrainTrackerProps struct {
-	Key           string
-	HttpClient   *http.Client
-	BaseUrl     string
+	Key        string
+	HttpClient *http.Client
+	BaseUrl    string
 }
 
 type TrainTracker struct {
 	key        string
 	httpClient *http.Client
-	baseUrl   string
+	baseUrl    string
 }
 
 func NewTrainTracker(props TrainTrackerProps) TrainTracker {
@@ -28,7 +28,7 @@ func NewTrainTracker(props TrainTrackerProps) TrainTracker {
 	return TrainTracker{
 		key:        props.Key,
 		httpClient: client,
-		baseUrl:   baseUrl,
+		baseUrl:    baseUrl,
 	}
 }
 
