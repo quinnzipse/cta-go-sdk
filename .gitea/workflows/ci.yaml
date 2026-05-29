@@ -17,6 +17,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-go@v5
         with:
@@ -60,3 +62,25 @@ jobs:
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
+
+      - name: Tag release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "cta-sdk-bot"
+          git config user.email "bot@zipse.cloud"
+
+          latest=$(git tag --list 'v*' --sort=-version:refname | head -1)
+          if [ -z "$latest" ]; then
+            new_tag="v0.1.0"
+          else
+            base=${latest#v}
+            major=${base%%.*}
+            rest=${base#*.}
+            minor=${rest%%.*}
+            patch=${rest#*.}
+            if [ "$patch" = "$rest" ]; then patch=0; fi
+            new_tag="v${major}.${minor}.$((patch + 1))"
+          fi
+
+          git tag "$new_tag"
+          git push "https://oauth2:${{ gitea.token }}@git.zipse.cloud/zippy/cta-go-sdk.git" "$new_tag"
