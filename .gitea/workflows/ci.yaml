@@ -59,6 +59,7 @@ jobs:
           git config user.name "cta-sdk-bot"
           git config user.email "bot@zipse.cloud"
 
+          git fetch --tags
           latest=$(git tag --list 'v*' --sort=-version:refname | head -1)
           if [ -z "$latest" ]; then
             new_tag="v0.1.0"
