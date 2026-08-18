@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           apk add --no-cache git build-base curl
-          curl -sL https://go.dev/dl/go1.26.5.linux-amd64.tar.gz | tar -C /usr/local -xz
+          curl -sL https://go.dev/dl/go1.26.6.linux-amd64.tar.gz | tar -C /usr/local -xz
           export PATH=/usr/local/go/bin:$HOME/go/bin:$PATH
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
           echo "PATH=/usr/local/go/bin:$HOME/go/bin:$PATH" >> $GITHUB_ENV
