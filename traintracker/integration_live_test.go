@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"git.zipse.cloud/zippy/cta-go-sdk/traintracker"
+	"github.com/quinnzipse/cta-go-sdk/traintracker"
 )
 
 func TestLocationsToFollow_Live(t *testing.T) {

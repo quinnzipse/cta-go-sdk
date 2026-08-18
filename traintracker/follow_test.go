@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"git.zipse.cloud/zippy/cta-go-sdk/traintracker"
+	"github.com/quinnzipse/cta-go-sdk/traintracker"
 )
 
 func TestFollow_Validation(t *testing.T) {

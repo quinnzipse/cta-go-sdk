@@ -21,7 +21,7 @@ You also need Go installed (1.22 or newer).
 Add the package to your project:
 
 ```bash
-go get git.zipse.cloud/zippy/cta-go-sdk/traintracker
+go get github.com/quinnzipse/cta-go-sdk/traintracker
 ```
 
 ## Basic example
@@ -33,7 +33,7 @@ import (
 	"fmt"
 	"os"
 
-	"git.zipse.cloud/zippy/cta-go-sdk/traintracker"
+	"github.com/quinnzipse/cta-go-sdk/traintracker"
 )
 
 func main() {
